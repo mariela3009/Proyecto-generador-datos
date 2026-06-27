@@ -1,0 +1,29 @@
+# Node
+node_modules/
+.npm/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Next.js
+.next/
+out/
+build/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Temporary files
+tmp_exports/
+*.log
