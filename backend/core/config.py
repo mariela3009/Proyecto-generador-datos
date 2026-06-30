@@ -49,10 +49,8 @@ class Settings(BaseSettings):
 
     @property
     def DATABASE_URL(self) -> str:
-        return (
-            f"mysql+pymysql://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}"
-            f"@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DB}"
-        )
+        # Using SQLite for local development to avoid external dependencies
+        return f"sqlite:///./{self.MYSQL_DB}.db"
 
     @property
     def CORS_ORIGINS(self) -> List[str]:

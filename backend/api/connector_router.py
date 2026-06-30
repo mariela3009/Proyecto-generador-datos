@@ -202,7 +202,7 @@ def insert_generated_data(
                             pk_offsets[table_name] = 0
 
         generator = DataGenerator(locale=req.locale or "es_ES")
-        generated_data = generator.generate(req.schema, req.table_configs, pk_offsets=pk_offsets)
+        generated_data = generator.generate(req.schema, req.table_configs, pk_offsets=pk_offsets, ai_prompt=req.ai_prompt)
 
         total_inserted = 0
         total_errors = 0

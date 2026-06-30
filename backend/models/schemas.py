@@ -215,6 +215,7 @@ class GenerateRequest(BaseModel):
     schema: DatabaseSchema
     table_configs: List[TableGenerationConfig]
     locale: Optional[str] = "es_ES"
+    ai_prompt: Optional[str] = None
 
 
 class GeneratePreviewRequest(BaseModel):
@@ -222,6 +223,7 @@ class GeneratePreviewRequest(BaseModel):
     table_configs: List[TableGenerationConfig]
     preview_rows: int = Field(default=10, ge=1, le=100)
     locale: Optional[str] = "es_ES"
+    ai_prompt: Optional[str] = None
 
 
 class GeneratedDataResponse(BaseModel):
@@ -236,6 +238,7 @@ class ExportRequest(BaseModel):
     table_configs: List[TableGenerationConfig]
     format: str = Field(..., pattern="^(sql|csv|json)$")
     locale: Optional[str] = "es_ES"
+    ai_prompt: Optional[str] = None
 
 
 class ExportResponse(BaseModel):
@@ -254,6 +257,7 @@ class InsertRequest(BaseModel):
     schema: DatabaseSchema
     table_configs: List[TableGenerationConfig]
     locale: Optional[str] = "es_ES"
+    ai_prompt: Optional[str] = None
 
 
 class InsertResponse(BaseModel):

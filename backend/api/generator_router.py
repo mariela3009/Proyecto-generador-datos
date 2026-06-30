@@ -36,7 +36,7 @@ def generate_preview(req: GeneratePreviewRequest, current_user: UsuarioResponse 
     generator = DataGenerator(locale=req.locale or "es_ES")
     
     try:
-        data = generator.generate(req.schema, preview_configs)
+        data = generator.generate(req.schema, preview_configs, ai_prompt=req.ai_prompt)
         
         # Transformar al formato de respuesta
         result = {}
@@ -59,7 +59,7 @@ def export_data(req: ExportRequest, current_user: UsuarioResponse = Depends(get_
     generator = DataGenerator(locale=req.locale or "es_ES")
     
     try:
-        data = generator.generate(req.schema, req.table_configs)
+        data = generator.generate(req.schema, req.table_configs, ai_prompt=req.ai_prompt)
         
         total_records = sum(len(t["rows"]) for t in data.values())
         if total_records == 0:

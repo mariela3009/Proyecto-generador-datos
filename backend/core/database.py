@@ -8,11 +8,13 @@ from sqlalchemy.orm import sessionmaker
 from backend.core.config import settings
 
 # Motor de conexión
+connect_args = {"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {}
 engine = create_engine(
     settings.DATABASE_URL,
     pool_pre_ping=True,       # Verifica conexión antes de usarla
     pool_recycle=3600,        # Recicla conexiones cada hora
     echo=False,               # True para debug de SQL
+    connect_args=connect_args,
 )
 
 # Fábrica de sesiones

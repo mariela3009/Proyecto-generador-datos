@@ -42,10 +42,13 @@ export default function QuickLoad({ onLoad }: QuickLoadProps) {
       <h2 className="text-base font-semibold text-foreground mb-3">Quick Load</h2>
       <div className="flex flex-wrap gap-2">
         {connections.map((conn) => (
-          <button
+          <div
             key={conn.id}
             onClick={() => onLoad(conn)}
-            className="group flex items-center gap-2 py-2 px-3 rounded-lg border border-border bg-card hover:border-primary/40 hover:bg-muted/50 transition-all text-left"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onLoad(conn) }}
+            className="group flex items-center gap-2 py-2 px-3 rounded-lg border border-border bg-card hover:border-primary/40 hover:bg-muted/50 transition-all text-left cursor-pointer"
           >
             <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             <div className="min-w-0">
@@ -62,7 +65,7 @@ export default function QuickLoad({ onLoad }: QuickLoadProps) {
             >
               <Trash2 className="h-3 w-3" />
             </button>
-          </button>
+          </div>
         ))}
       </div>
     </div>

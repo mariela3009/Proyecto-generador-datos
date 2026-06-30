@@ -20,7 +20,10 @@ import {
   CheckCircle,
   FileCode,
   FileJson,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Sparkles,
+  X,
+  MessageSquarePlus
 } from "lucide-react"
 
 interface GeneratorConfigPanelProps {
@@ -36,7 +39,7 @@ interface TableConfig {
 }
 
 export default function GeneratorConfigPanel({ schema, connection, onBack }: GeneratorConfigPanelProps) {
-  // Initialize table configs
+  // Initialize table configs (sin use_ai ni ai_prompt per-table)
   const [tableConfigs, setTableConfigs] = useState<TableConfig[]>(
     schema.tables.map((t) => ({
       table_name: t.name,
@@ -46,6 +49,10 @@ export default function GeneratorConfigPanel({ schema, connection, onBack }: Gen
   )
   const [locale, setLocale] = useState("es_ES")
   const [expandedTables, setExpandedTables] = useState<Record<string, boolean>>({})
+  
+  // Global AI Prompt State
+  const [showPrompt, setShowPrompt] = useState(false)
+  const [globalAiPrompt, setGlobalAiPrompt] = useState("")
   
   // Loading & State
   const [loading, setLoading] = useState(false)
@@ -79,6 +86,17 @@ export default function GeneratorConfigPanel({ schema, connection, onBack }: Gen
     return tableConfigs.filter((c) => c.selected)
   }
 
+  // Build request body with global ai_prompt
+  const buildRequestPayload = (overrides: Record<string, any> = {}) => {
+    return {
+      schema,
+      table_configs: getSelectedConfigs(),
+      locale,
+      ai_prompt: globalAiPrompt.trim() || null,
+      ...overrides,
+    }
+  }
+
   // Preview Generated Data
   const handlePreview = async () => {
     const selectedConfigs = getSelectedConfigs()
@@ -94,12 +112,7 @@ export default function GeneratorConfigPanel({ schema, connection, onBack }: Gen
     try {
       const data = await api.post<Record<string, { table_name: string; columns: string[]; rows: any[][] }>>(
         "/generate/preview",
-        {
-          schema,
-          table_configs: selectedConfigs,
-          preview_rows: 5,
-          locale,
-        }
+        buildRequestPayload({ preview_rows: 5 })
       )
       setPreviewData(data)
       // Set first table as active tab
@@ -126,12 +139,7 @@ export default function GeneratorConfigPanel({ schema, connection, onBack }: Gen
     try {
       const result = await api.post<{ download_url: string; filename: string }>(
         "/generate/export",
-        {
-          schema,
-          table_configs: selectedConfigs,
-          format,
-          locale,
-        }
+        buildRequestPayload({ format })
       )
       
       // Trigger download
@@ -163,9 +171,7 @@ export default function GeneratorConfigPanel({ schema, connection, onBack }: Gen
     try {
       const result = await api.post<any>("/connect/insert", {
         connection,
-        schema,
-        table_configs: selectedConfigs,
-        locale,
+        ...buildRequestPayload(),
       })
       setInsertResult(result)
     } catch (e: any) {
@@ -285,6 +291,60 @@ export default function GeneratorConfigPanel({ schema, connection, onBack }: Gen
 
         {/* Action Panel */}
         <div className="space-y-4">
+          {/* AI Status Card */}
+          <Card className="border-purple-300/40 bg-gradient-to-br from-purple-500/5 to-violet-500/5">
+            <CardContent className="pt-5 pb-4 space-y-3">
+              <div className="flex items-center gap-2.5">
+                <div className="h-8 w-8 rounded-lg bg-purple-500/15 flex items-center justify-center">
+                  <Sparkles className="h-4 w-4 text-purple-500" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-foreground">IA Activa Automáticamente</p>
+                  <p className="text-[10px] text-muted-foreground leading-tight">
+                    Gemini genera datos realistas y luego se multiplican localmente.
+                  </p>
+                </div>
+              </div>
+
+              {/* Global Prompt Toggle */}
+              {!showPrompt ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowPrompt(true)}
+                  className="w-full h-8 text-[11px] border-purple-300/40 text-purple-600 hover:bg-purple-500/10 hover:text-purple-700 font-semibold"
+                >
+                  <MessageSquarePlus className="h-3.5 w-3.5 mr-1.5" />
+                  Personalizar con Prompt
+                </Button>
+              ) : (
+                <div className="space-y-2 border-t border-purple-200/30 pt-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-[10px] uppercase tracking-wider text-purple-500 font-bold">
+                      Prompt Global para la IA
+                    </Label>
+                    <button
+                      onClick={() => { setShowPrompt(false); setGlobalAiPrompt(""); }}
+                      className="text-muted-foreground hover:text-foreground p-0.5"
+                      title="Cerrar y limpiar prompt"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  <textarea
+                    value={globalAiPrompt}
+                    onChange={(e) => setGlobalAiPrompt(e.target.value)}
+                    placeholder="Ej: Es un sistema hospitalario en CDMX. Los pacientes deben tener nombres mexicanos, diagnósticos reales variados, y las citas deben ser en horario laboral..."
+                    className="w-full h-24 px-3 py-2 text-xs rounded-lg border border-purple-300/30 bg-purple-500/5 placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-purple-400 focus:border-purple-400 resize-none"
+                  />
+                  <p className="text-[10px] text-muted-foreground italic leading-tight">
+                    Describe el contexto de tu base de datos para obtener datos más específicos y coherentes.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           <Card className="border-border/60">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold">Parámetros de Generación</CardTitle>
